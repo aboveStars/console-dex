@@ -1,47 +1,60 @@
 import inquirer from "inquirer";
-import poolService from "../services/pool_service.js";
-import transactionManager from "../managers/transaction_manager.js";
-import authManager from "../managers/auth_manager.js";
+import { swap } from "../utils/web3/dexFunctions.js";
+import MainMenu from "./main_menu.js";
+import ora from "ora";
 
-async function SwapMenu(pool_id) {
-    const pool = await poolService.getPoolById(pool_id);
-    
-    
-    const { choice } = await inquirer.prompt([
+async function SwapMenu() {
+  const { choice } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "choice",
+      message: "Swap Menu",
+      choices: [
+        {
+          name: "TokenA" + "->" + "TokenB",
+          value: 1,
+        },
+        {
+          name: "TokenB" + "->" + "TokenA",
+          value: 2,
+        },
+        "Return Back",
+      ],
+    },
+  ]);
+
+  if (choice === 1) {
+    const { amount } = await inquirer.prompt([
       {
-        type: "list",
-        name: "choice",
-        message: "Swap Menu",
-        choices: [{name: Object.keys(pool.token_1)[0] + "->" + Object.keys(pool.token_2)[0], value: 1}, {name: Object.keys(pool.token_2)[0] + "->" + Object.keys(pool.token_1)[0], value: 2}, "Return Back"]
-      }
+        type: "input",
+        name: "amount",
+        message: "Enter your " + "TokenA" + " amount:",
+      },
     ]);
 
-    if(choice === 1){
+    const spinner = ora("Processing...").start(); // Start spinner
 
-      const { amount } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "amount",
-          message: "Enter your " + Object.keys(pool.token_1)[0] + " amount:",
-        },
-      ]);
-      
-      await transactionManager.swap(authManager.getPrivateKey(), pool_id, Object.keys(pool.token_1)[0], parseFloat(amount));
+    await swap(amount, 0, true);
+    spinner.succeed("Swap successful!");
+  } else if (choice === 2) {
+    const { amount } = await inquirer.prompt([
+      {
+        type: "input",
+        name: "amount",
+        message: "Enter your " + "TokenB" + " amount:",
+      },
+    ]);
 
-    }else if(choice === 2){
-      
-      const { amount } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "amount",
-          message: "Enter your " + Object.keys(pool.token_2)[0] + " amount:",
-        },
-      ]);
-      
-      await transactionManager.swap(authManager.getPrivateKey(), pool_id, Object.keys(pool.token_2)[0], parseFloat(amount));
+    const spinner = ora("Processing...").start(); // Start spinner
 
-    }
-    else if(choice === "Return Back"){}
+    await swap(amount, 0, false);
+
+    spinner.succeed("Swap successful!");
+  } else if (choice === "Return Back") {
+    return await MainMenu();
+  }
+
+  return await MainMenu();
 }
 
 export default SwapMenu;

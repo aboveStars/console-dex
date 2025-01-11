@@ -1,26 +1,36 @@
-import inquirer from "inquirer";
-import walletService from "../services/wallet_service.js";
 import chalk from "chalk";
+import inquirer from "inquirer";
+import { getTokenBalances } from "../utils/web3/tokenFunctions.js";
+import MainMenu from "./main_menu.js";
+import ituScanMenu from "./ituscan_menu.js";
+import { getLiquidity } from "../utils/web3/dexFunctions.js";
 
-async function WalletMenu(publicKey) {
-    const wallet = await walletService.getWalletByPublicKey(publicKey);
+async function WalletMenu(optionalPublicAddress, inScan) {
+  let balances = await getTokenBalances(optionalPublicAddress);
 
-    Object.entries(wallet.balances).forEach(([token, amount]) => {
-      console.log(
-        `${chalk.blue.bold(token)}: ${chalk.yellow.bold(amount.toFixed(6))}`
-      );
-    });
+  let liquidityTokenValue = await getLiquidity(optionalPublicAddress);
 
-    const { choice } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "choice",
-        message: "Wallet Menu",
-        choices: [{ name: "Return Back" }]
-      }
-    ]);
+  balances = { ...balances, ITULiquidityToken: liquidityTokenValue };
 
-    if(choice === "Return Back"){}
+  Object.entries(balances).forEach(([token, amount]) => {
+    console.log(`${chalk.blue.bold(token)}: ${chalk.yellow.bold(amount)}`);
+  });
+
+  const { choice } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "choice",
+      message: "Wallet Menu",
+      choices: [{ name: "Return Back" }],
+    },
+  ]);
+
+  if (choice === "Return Back") {
+    if (inScan) {
+      return await ituScanMenu();
+    }
+    return await MainMenu();
+  }
 }
 
 export default WalletMenu;

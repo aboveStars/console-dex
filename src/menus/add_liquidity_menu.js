@@ -1,47 +1,57 @@
 import inquirer from "inquirer";
-import poolService from "../services/pool_service.js";
-import transactionManager from "../managers/transaction_manager.js";
-import authManager from "../managers/auth_manager.js";
+import ora from "ora";
+import { addLiquidity } from "../utils/web3/dexFunctions.js";
+import MainMenu from "./main_menu.js";
 
-async function AddLiquidityMenu(pool_id) {
-    const pool = await poolService.getPoolById(pool_id);
-    
-    
-    const { choice } = await inquirer.prompt([
+async function AddLiquidityMenu() {
+  const { choice } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "choice",
+      message: "Add Liquidity Menu",
+      choices: [
+        { name: "Token0", value: 1 },
+        { name: "Token1", value: 2 },
+        "Return Back",
+      ],
+    },
+  ]);
+
+  if (choice === 1) {
+    const { amount } = await inquirer.prompt([
       {
-        type: "list",
-        name: "choice",
-        message: "Add Liquidity Menu",
-        choices: [{name: Object.keys(pool.token_1)[0], value: 1}, {name: Object.keys(pool.token_2)[0], value: 2}, "Return Back"]
-      }
+        type: "input",
+        name: "amount",
+        message: "Enter your " + "Token0" + " amount:",
+      },
     ]);
 
-    if(choice === 1){
+    const spinner = ora("Processing...").start();
 
-      const { amount } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "amount",
-          message: "Enter your " + Object.keys(pool.token_1)[0] + " amount:",
-        },
-      ]);
-      
-      await transactionManager.addLiquidity(authManager.getPrivateKey(), pool_id, Object.keys(pool.token_1)[0], parseFloat(amount));
+    // Need to get liquidity details...
 
-    }else if(choice === 2){
-      
-      const { amount } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "amount",
-          message: "Enter your " + Object.keys(pool.token_2)[0] + " amount:",
-        },
-      ]);
-      
-      await transactionManager.addLiquidity(authManager.getPrivateKey(), pool_id, Object.keys(pool.token_2)[0], parseFloat(amount));
+    await addLiquidity(amount, amount);
 
-    }
-    else if(choice === "Return Back"){}
+    spinner.succeed("Liquidity added successfully!");
+  } else if (choice === 2) {
+    const { amount } = await inquirer.prompt([
+      {
+        type: "input",
+        name: "amount",
+        message: "Enter your " + "Token1" + " amount:",
+      },
+    ]);
+
+    const spinner = ora("Processing...").start();
+
+    await addLiquidity(amount, amount);
+
+    spinner.succeed("Liquidity added successfully!");
+  } else if (choice === "Return Back") {
+    return await MainMenu();
+  }
+
+  return await MainMenu();
 }
 
 export default AddLiquidityMenu;

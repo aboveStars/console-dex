@@ -1,56 +1,52 @@
 import inquirer from "inquirer";
-import AuthManager from "../managers/auth_manager.js";
 import ItuScanMenu from "./ituscan_menu.js";
-import WalletMenu from "./wallet_menu.js";
 import PoolsMenu from "./pools_menu.js";
+import WalletMenu from "./wallet_menu.js";
+import figlet from "figlet";
+import chalk from "chalk";
+import SwapMenu from "./swap_menu.js";
+import AddLiquidityMenu from "./add_liquidity_menu.js";
 
 async function MainMenu() {
-  if (AuthManager.isLoggedIn()) {
-    console.log("\nConnected Wallet: " + AuthManager.getCurrentWallet());
-  }else{
-    console.log("Wallet not connected")
-  }
-  
-  console.log("----------------------------------------------------------------------------------------");
-  
-  const choices = [{ name: "My Balances", disabled: !AuthManager.isLoggedIn()}, "ITUScan", "Pools"];
-
-  AuthManager.isLoggedIn() ? choices.push("Disconnect") : choices.push("Initialize Wallet");
-
+  console.log(
+    "----------------------------------------------------------------------------------------"
+  );
+  const choices = [
+    "My Balances",
+    "Pool Reserves",
+    "ITUScan",
+    "Swap Tokens",
+    "Add Liquidity",
+    "Remove Liquidity",
+    "Exit",
+  ];
   const { choice } = await inquirer.prompt([
     {
       type: "list",
       name: "choice",
       message: "Main Menu",
-      choices: choices
-    }
+      choices: choices,
+    },
   ]);
-
   if (choice === "My Balances") {
-    await WalletMenu(AuthManager.getCurrentWallet());
-    await MainMenu();
-  }else if(choice === "ITUScan"){
+    await WalletMenu();
+  } else if (choice === "ITUScan") {
     await ItuScanMenu();
-    await MainMenu();
-  }else if(choice === "Pools"){
+  } else if (choice === "Pool Reserves") {
     await PoolsMenu();
-    await MainMenu();
-  }else if (choice === "Initialize Wallet"){
-
-    const { phraseKey } = await inquirer.prompt([
-      {
-        type: "input",
-        name: "phraseKey",
-        message: "Enter your secret phrase:",
-      },
-    ]);
-
-    await AuthManager.login(phraseKey);
-    await MainMenu();
-  }
-  else if(choice === "Disconnect"){
-    AuthManager.disconnect();
-    await MainMenu();
+  } else if (choice === "Swap Tokens") {
+    await SwapMenu();
+  } else if (choice === "Add Liquidity") {
+    await AddLiquidityMenu();
+  } else if (choice === "Exit") {
+    figlet("See You!", "Small", function (err, data) {
+      if (!err) {
+        console.log(chalk.cyan(data));
+        process.exit(0);
+      } else {
+        process.exit(0);
+      }
+    });
   }
 }
 
