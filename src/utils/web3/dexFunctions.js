@@ -23,6 +23,18 @@ async function addLiquidity(amount0, amount1) {
   return await tx.wait();
 }
 
+
+async function getSwapAmount(amountIn, token0ToToken1) {
+  try {
+    const amtIn = ethers.parseEther(amountIn.toString());
+    const expectedAmount = await dex.getSwapAmount(amtIn, token0ToToken1);
+    return ethers.formatEther(expectedAmount);
+  } catch (error) {
+    console.error("Error calculating swap amount:", error.message);
+    throw error;
+  }
+}
+
 async function swap(amountIn, minAmountOut, token0ToToken1) {
   const amtIn = ethers.parseEther(amountIn.toString());
   const minAmtOut = ethers.parseEther(minAmountOut.toString());
@@ -52,4 +64,4 @@ async function removeLiquidity(amount) {
   return await tx.wait();
 }
 
-export { getReserves, addLiquidity, swap, getLiquidity, removeLiquidity };
+export { getReserves, addLiquidity, swap, getLiquidity, removeLiquidity, getSwapAmount };
