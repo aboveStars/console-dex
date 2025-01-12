@@ -10,6 +10,32 @@ async function getReserves() {
   };
 }
 
+async function getLiquidityAmount(amountA, isToken0) {
+  try {
+    // Convert string amounts to BigNumber if necessary
+    const amount = ethers.toBigInt(amountA);
+
+    // Call the contract's getLiquidityAmount function
+    const [requiredOtherToken, expectedLiquidity] =
+      await dex.getLiquidityAmount(amount, isToken0);
+
+    return {
+      requiredOtherToken,
+      expectedLiquidity,
+    };
+  } catch (error) {
+    // Handle specific error cases
+    if (error.message.includes("Invalid input amount")) {
+      throw new Error("The input amount must be greater than 0");
+    } else if (error.message.includes("Invalid required amount")) {
+      throw new Error("The calculated required amount is too small");
+    }
+
+    // Rethrow any other errors
+    throw error;
+  }
+}
+
 async function addLiquidity(amount0, amount1) {
   const amt0 = ethers.parseEther(amount0.toString());
   const amt1 = ethers.parseEther(amount1.toString());
@@ -22,7 +48,6 @@ async function addLiquidity(amount0, amount1) {
   const tx = await dex.addLiquidity(amt0, amt1);
   return await tx.wait();
 }
-
 
 async function getSwapAmount(amountIn, token0ToToken1) {
   try {
@@ -64,4 +89,12 @@ async function removeLiquidity(amount) {
   return await tx.wait();
 }
 
-export { getReserves, addLiquidity, swap, getLiquidity, removeLiquidity, getSwapAmount };
+export {
+  getReserves,
+  addLiquidity,
+  swap,
+  getLiquidity,
+  removeLiquidity,
+  getSwapAmount,
+  getLiquidityAmount,
+};
