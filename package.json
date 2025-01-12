@@ -4,7 +4,7 @@
   "bin": {
     "itu-bc-console-app": "./index.js"
   },
-  "description": "Blockchain ağı üzerindeki swap işlemlerini ve pool mekanizmalarını simüle eden konsol uygulaması.",
+  "description": "Basic Dex Console Application",
   "type": "module",
   "main": "index.js",
   "scripts": {
