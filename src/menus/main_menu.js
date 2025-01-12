@@ -17,7 +17,6 @@ async function MainMenu() {
     "ITUScan",
     "Swap Tokens",
     "Add Liquidity",
-    "Remove Liquidity",
     "Exit",
   ];
   const { choice } = await inquirer.prompt([
